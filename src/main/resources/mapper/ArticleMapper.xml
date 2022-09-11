@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meet.talk.mapper.ArticleMapper">
+
+    <resultMap type="com.meet.talk.domain.Article" id="ArticleMap">
+        <result property="aId" column="a_id" jdbcType="INTEGER"/>
+        <result property="uId" column="u_id" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="summary" column="summary" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+
+</mapper>

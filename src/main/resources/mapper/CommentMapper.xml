@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.meet.talk.mapper.CommentMapper">
+
+    <resultMap type="com.meet.talk.domain.Comment" id="CommentMap">
+        <result property="cId" column="c_id" jdbcType="INTEGER"/>
+        <result property="uId" column="u_id" jdbcType="INTEGER"/>
+        <result property="aId" column="a_id" jdbcType="INTEGER"/>
+        <result property="comment" column="comment" jdbcType="VARCHAR"/>
+        <result property="toName" column="to_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
+</mapper>
