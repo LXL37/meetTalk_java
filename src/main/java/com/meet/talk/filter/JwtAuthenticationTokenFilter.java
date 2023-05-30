@@ -6,6 +6,7 @@ import com.meet.talk.domain.AppHttpCodeEnum;
 import com.meet.talk.domain.ResponseResult;
 import com.meet.talk.domain.SystemConstants;
 import com.meet.talk.domain.User;
+import com.meet.talk.domain.vo.UserLoginVo;
 import com.meet.talk.utils.JwtUtil;
 
 import com.meet.talk.utils.RedisCache;
@@ -41,12 +42,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 
-
-
         //获取请求头中的token
         String token = request.getHeader("token");
-        log.debug("token: {}",token);
-        if(!StringUtils.hasText(token)){
+
+        if (!StringUtils.hasText(token)) {
             //说明该接口不需要登录  直接放行
             filterChain.doFilter(request, response);
             return;
@@ -60,28 +59,35 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             e.printStackTrace();
             //token超时  token非法
             //响应告诉前端需要重新登录
-            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_RE_LOGIN);
             WebUtils.renderString(response, JSON.toJSONString(result));
-            return ;
+            return;
         }
         String userId = claims.getSubject();
 
         //todo 从缓存中获取用户信息
 
         //从redis中获取用户信息
-       User loginUser = redisCache.getCacheObject(SystemConstants.LOGIN_USER_PREFIX + userId);
+        UserLoginVo loginUser = redisCache.getCacheObject(SystemConstants.LOGIN_USER_PREFIX + userId);
         //如果获取不到
-        if(Objects.isNull(loginUser)){
+        if (Objects.isNull(loginUser)) {
             //说明登录过期  提示重新登录
             ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_RE_LOGIN);
             WebUtils.renderString(response, JSON.toJSONString(result));
 
             return;
         }
-        //存入SecurityContextHolder
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser,null, loginUser.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+        //token 不相同
+        if (!Objects.equals(loginUser.getToken(), token)) {
+            ResponseResult result = ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+            WebUtils.renderString(response, JSON.toJSONString(result));
+            return;
+        }
+
+        //存入SecurityContextHolder
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginUser, null, loginUser.getUser().getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
 
         filterChain.doFilter(request, response);

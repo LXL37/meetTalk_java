@@ -24,45 +24,43 @@ public class HistoryServiceImpl implements HistoryService {
     private RedisCache redisCache;
 
     @Resource
-    private RedisTemplate redisTemplate;
-    @Resource
     private ArticleMapper articleMapper;
+
     @Override
     public ResponseResult historyArticle(HistoryArticleVo historyArticleVo) {
-      //  ValueOperations ops = redisTemplate.opsForValue();
 
         //对应 用户 还没有缓存 或者已经过期
-        if (redisCache.getCacheObject((String.valueOf(historyArticleVo.getUId())))==null){
-            HistoryArticleListVo historyArticleListVo=new HistoryArticleListVo();
-            List<HistoryArticleVo> articleVos=new ArrayList<>();
+        if (redisCache.getCacheObject((String.valueOf(historyArticleVo.getUId()))) == null) {
+            HistoryArticleListVo historyArticleListVo = new HistoryArticleListVo();
+            List<HistoryArticleVo> articleVos = new ArrayList<>();
             articleVos.add(historyArticleVo);
             historyArticleListVo.setHistoryArticleVo(articleVos);
 
             //只缓存一天
-            redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()),historyArticleListVo,SystemConstants.HISTORY_ARTICLE_TTL,TimeUnit.MILLISECONDS);
-        }else {
+            redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()), historyArticleListVo, SystemConstants.HISTORY_ARTICLE_TTL, TimeUnit.MILLISECONDS);
+        } else {
 
 
-            boolean flag=false;
-            HistoryArticleListVo articleListVo = (HistoryArticleListVo) redisCache.getCacheObject(String.valueOf(historyArticleVo.getUId()));
+            boolean flag = false;
+            HistoryArticleListVo articleListVo = redisCache.getCacheObject(String.valueOf(historyArticleVo.getUId()));
             List<HistoryArticleVo> articleVos = articleListVo.getHistoryArticleVo();
             for (HistoryArticleVo articleVo : articleVos) {
                 // 判断是否重复
-                if (articleVo.getAId().equals(historyArticleVo.getAId())){
-                    flag=true;
+                if (articleVo.getAId().equals(historyArticleVo.getAId())) {
+                    flag = true;
                     //更新时间戳
                     articleVo.setClickTime(historyArticleVo.getClickTime());
                     break;
                 }
             }
-            if (flag){
+            if (flag) {
                 //更新时间戳
 
-                redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()),articleListVo,SystemConstants.HISTORY_ARTICLE_TTL,TimeUnit.MILLISECONDS);
+                redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()), articleListVo, SystemConstants.HISTORY_ARTICLE_TTL, TimeUnit.MILLISECONDS);
                 ResponseResult.okResult();
-            }else {
+            } else {
                 articleVos.add(historyArticleVo);
-                redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()),articleListVo,SystemConstants.HISTORY_ARTICLE_TTL,TimeUnit.MILLISECONDS);
+                redisCache.setCacheObject(String.valueOf(historyArticleVo.getUId()), articleListVo, SystemConstants.HISTORY_ARTICLE_TTL, TimeUnit.MILLISECONDS);
             }
 
 
@@ -76,24 +74,23 @@ public class HistoryServiceImpl implements HistoryService {
     public ResponseResult historyArticleList(Long uId) {
 
         HistoryArticleListVo articleListVo = null;
-        List<HistoryArticleVo> articleVos=new ArrayList<>();
+        List<HistoryArticleVo> articleVos = new ArrayList<>();
 
-        try{
-           articleListVo=  redisCache.getCacheObject((String.valueOf(uId)));
+        try {
+            articleListVo = redisCache.getCacheObject((String.valueOf(uId)));
             List<HistoryArticleVo> historyArticleVo = articleListVo.getHistoryArticleVo();
             //只返回最近点击的5条记录
             historyArticleVo.stream()
-                    .sorted((o1, o2) -> (int) (o2.getClickTime()-o1.getClickTime()))
+                    .sorted((o1, o2) -> (int) (o2.getClickTime() - o1.getClickTime()))
                     .forEach(historyArticleVo1 -> {
-                        if (articleVos.size()< SystemConstants.HISTORY_ARTICLE_MAX_NUM){
+                        if (articleVos.size() < SystemConstants.HISTORY_ARTICLE_MAX_NUM) {
                             articleVos.add(historyArticleVo1);
                         }
 
                     });
-        }catch (Exception e){
-                return ResponseResult.okResult();
+        } catch (Exception e) {
+            return ResponseResult.okResult();
         }
-
 
 
         return ResponseResult.okResult(articleVos);

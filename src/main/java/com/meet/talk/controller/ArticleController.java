@@ -30,29 +30,37 @@ public class ArticleController {
 
     @PostMapping("/article")
     @ApiOperation("发表文章(根据用户id发表文章)")
-    public ResponseResult sendArticle(@RequestBody @Valid Article article){
+    public ResponseResult sendArticle(@RequestBody @Valid Article article) {
         return articleService.sendArticle(article);
     }
+    @DeleteMapping("/article/{aId}/{uId}")
+    @ApiOperation("用户删除自己的文章")
+    public ResponseResult deleteArticle(@PathVariable("aId") Long aId,@PathVariable("uId") Long uId) {
+        return articleService.deleteArticle(aId,uId);
+    }
+
     @GetMapping("/article/{uId}")
     @ApiOperation("默认获取热门文章列表")
-    public ResponseResult getArticle(@PathVariable("uId")Long uId){
+    public ResponseResult getArticle(@PathVariable("uId") Long uId) {
         return articleService.getArticle(uId);
     }
+
     @GetMapping("/articleNew")
     @ApiOperation("获取最新文章列表")
-    public ResponseResult getNewArticle(){
+    public ResponseResult getNewArticle() {
         return articleService.getNewArticle();
     }
 
 
     @GetMapping("/articleDetails/{aId}/{uId}")
     @ApiOperation("文章详情")
-    public ResponseResult getArticleDetails(@PathVariable("aId") Long aId,@PathVariable("uId") Long uId){
-        return  articleService.getArticleDetails(aId,uId);
+    public ResponseResult getArticleDetails(@PathVariable("aId") Long aId, @PathVariable("uId") Long uId) {
+        return articleService.getArticleDetails(aId, uId);
     }
+
     @GetMapping("/followArticle/{uId}")
     @ApiOperation(value = "查询关注的用户发布的文章")
-    public ResponseResult followArticle(@PathVariable("uId") Long uId){
+    public ResponseResult followArticle(@PathVariable("uId") Long uId) {
         return articleService.followArticle(uId);
     }
 }

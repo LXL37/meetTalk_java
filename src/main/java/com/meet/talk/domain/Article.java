@@ -38,6 +38,7 @@ public class Article implements Serializable {
     @Size(max=32,message="简介字数不能超过32个字!")
     private String summary;
     @NotBlank(message = "内容不能为空!")
+    @Size(max=1000,message="内容字数不能超过1000个字!")
     private String content;
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;

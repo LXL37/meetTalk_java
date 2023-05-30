@@ -31,9 +31,10 @@ public class CommentController {
 
     @GetMapping("/comment/{aId}")
     @ApiOperation(value = "获取文章内的评论")
-    public ResponseResult getComments(@PathVariable("aId") Long aId ){
-        return  commentService.getComments(aId);
+    public ResponseResult getComments(@PathVariable("aId") Long aId) {
+        return commentService.getComments(aId);
     }
+
     @PostMapping("/comment")
     @ApiOperation("发表评论")
     public ResponseResult sendMsg(@RequestBody @Valid Comment comment) throws IOException {

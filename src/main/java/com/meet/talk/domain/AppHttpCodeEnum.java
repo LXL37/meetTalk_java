@@ -46,7 +46,7 @@ public enum AppHttpCodeEnum {
 
 
     LOGIN_ERROR(515,"用户名或密码错误"),
-
+    ARTICLE_DELETED(516,"该文章已被删除"),
     STATUS_NOT_NULL(514,"请选择状态码"), SYSTEM_ERROR(520,"出现错误!" );
 
 

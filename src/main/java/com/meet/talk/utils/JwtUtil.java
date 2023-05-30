@@ -1,5 +1,6 @@
 package com.meet.talk.utils;
 
+import com.meet.talk.domain.SystemConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -16,10 +17,6 @@ import java.util.UUID;
  */
 public class JwtUtil {
 
-    //有效期为
-    public static final Long JWT_TTL = 60 * 60 *  1000L;// 60 * 60 *1000  一个小时
-    //设置秘钥明文
-    public static final String JWT_KEY = "meetTalk";
 
     public static String getUUID(){
         String token = UUID.randomUUID().toString().replaceAll("-", "");
@@ -53,7 +50,7 @@ public class JwtUtil {
         long nowMillis = System.currentTimeMillis();
         Date now = new Date(nowMillis);
         if(ttlMillis==null){
-            ttlMillis=JwtUtil.JWT_TTL;
+            ttlMillis= SystemConstants.JWT_TTL;
         }
         long expMillis = nowMillis + ttlMillis;
         Date expDate = new Date(expMillis);
@@ -85,7 +82,7 @@ public class JwtUtil {
      * @return
      */
     public static SecretKey generalKey() {
-        byte[] encodedKey = Base64.getDecoder().decode(JwtUtil.JWT_KEY);
+        byte[] encodedKey = Base64.getDecoder().decode(SystemConstants.JWT_KEY);
         SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
         return key;
     }

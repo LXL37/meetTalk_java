@@ -1,20 +1,25 @@
 package com.meet.talk.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.meet.talk.domain.*;
 
+import com.meet.talk.domain.vo.HistoryArticleListVo;
+import com.meet.talk.domain.vo.HistoryArticleVo;
 import com.meet.talk.mapper.*;
 import com.meet.talk.service.ArticleService;
 import com.meet.talk.utils.BeanCopyUtils;
-import javafx.scene.control.Label;
+
+import com.meet.talk.utils.RedisCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -40,6 +45,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private PraiseMapper praiseMapper;
     @Resource
     private AttentionMapper attentionMapper;
+    @Resource
+    private RedisCache redisCache;
     @Override
 
     public ResponseResult sendArticle(Article article) {
@@ -52,7 +59,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Override
     public ResponseResult getArticleDetails(Long aId,Long uId) {
+
+
+
         Article article = articleMapper.selectById(aId);
+        //如果从历史浏览里点击该文章 该文章已被删除,则需要删除redis里缓存的文章
+        if (article==null){
+            HistoryArticleListVo historyArticleVo =redisCache.getCacheObject((String.valueOf(uId)));
+            List<HistoryArticleVo> historyArticleVoList = historyArticleVo.getHistoryArticleVo();
+            historyArticleVoList.removeIf(articleVo -> articleVo.getAId().equals(aId));
+
+            redisCache.deleteObject(String.valueOf(uId));
+            redisCache.setCacheObject(String.valueOf(uId), historyArticleVo, SystemConstants.HISTORY_ARTICLE_TTL, TimeUnit.MILLISECONDS);
+
+
+            return ResponseResult.errorResult(AppHttpCodeEnum.ARTICLE_DELETED);
+        }
         User user = userMapper.selectById(article.getUId());
 
         LambdaQueryWrapper<Comment> commentWrapper=new LambdaQueryWrapper<>();
@@ -116,6 +138,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
     @Override
     public ResponseResult getNewArticle() {
+
+
         LambdaQueryWrapper<Article> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Article::getCreateTime);
         return ResponseResult.okResult(addArticleParam( list(queryWrapper),0L));
@@ -127,7 +151,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         queryWrapper
                 .eq(Attention::getUId,uId)
                 .select(Attention::getFollowUId);
+
         List<Attention> attentions = attentionMapper.selectList(queryWrapper);
+        if (attentions.isEmpty()){
+            return ResponseResult.okResult();
+        }
         List<Long> followUIds=new ArrayList<>();;
         attentions.forEach(follow->followUIds.add(follow.getFollowUId()));
 
@@ -138,6 +166,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         List<Article> articles = articleMapper.selectList(articleLambdaQueryWrapper);
         return ResponseResult.okResult(addArticleParam(articles,uId));
 
+
+    }
+
+    /**
+     * 用户点击到自己的文章详情后可以删除该文章,因此需要uId 和aId
+     * @param aId
+     * @param uId
+     * @return
+     */
+    @Override
+    public ResponseResult deleteArticle(Long aId,Long uId) {
+
+        Article article = articleMapper.selectById(aId);
+        if (article.getUId().equals(uId)){
+            //todo aId关联多个表 不能直接删除
+            articleMapper.deleteById(aId);
+            return ResponseResult.okResult();
+        }else {
+            return ResponseResult.errorResult(AppHttpCodeEnum.ERROR);
+        }
 
     }
 

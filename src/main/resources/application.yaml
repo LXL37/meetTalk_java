@@ -2,9 +2,9 @@ server:
   port: 8888
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/meet_talk?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://123.57.55.222:3306/meet_talk?characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true&zeroDateTimeBehavior=CONVERT_TO_NULL
     username: root
-    password:
+    password: Aa1181552548
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -15,8 +15,7 @@ spring:
       matching-strategy: ant_path_matcher
   redis:
     port: 6379
-    host: 10.217.211.229
-    password: Aa1181552548
+    host: 123.57.55.222
     jedis:
       pool:
         max-active: 8
@@ -24,10 +23,9 @@ spring:
         max-idle: 8
         min-idle: 0
     timeout: 5000ms
+    password: Aa1181552548
 
 mybatis-plus:
-#  configuration:
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
       logic-delete-value: 1

@@ -8,7 +8,7 @@ import com.meet.talk.mapper.FavoritesArticleMapper;
 import com.meet.talk.mapper.FavoritesMapper;
 import com.meet.talk.mapper.UserMapper;
 import com.meet.talk.service.FavoritesService;
-import javafx.scene.control.Label;
+
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

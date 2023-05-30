@@ -32,37 +32,38 @@ public class FavoritesController {
 
     @GetMapping("/favorites/{uId}")
     @ApiOperation(value = "根据用户id查询所有收藏夹")
-    public ResponseResult userFavorites(@PathVariable("uId")Long uId){
+    public ResponseResult userFavorites(@PathVariable("uId") Long uId) {
         return favoritesService.userFavorites(uId);
     }
 
-     @PostMapping("/favorites")
+    @PostMapping("/favorites")
     @ApiOperation(value = "用户创建收藏夹")
-    public ResponseResult addFavorites(@RequestBody Favorites favorites){
+    public ResponseResult addFavorites(@RequestBody Favorites favorites) {
         return favoritesService.addFavorites(favorites);
     }
-  @PostMapping("/deleteFavorites/{fId}")
+
+    @PostMapping("/deleteFavorites/{fId}")
     @ApiOperation(value = "用户删除收藏夹")
-    public ResponseResult deleteFavorites(@PathVariable("fId") Long fId){
+    public ResponseResult deleteFavorites(@PathVariable("fId") Long fId) {
         return favoritesService.deleteFavorites(fId);
     }
-  @PostMapping("/deleteFavoritesArticle/{id}")
+
+    @PostMapping("/deleteFavoritesArticle/{id}")
     @ApiOperation(value = "用户删除收藏夹内具体的文章")
-    public ResponseResult deleteFavoritesArticle(@PathVariable("id") Long id){
+    public ResponseResult deleteFavoritesArticle(@PathVariable("id") Long id) {
         return favoritesService.deleteFavoritesArticle(id);
     }
 
 
-
     @PostMapping("/favorites/{aId}")
     @ApiOperation(value = "将文章根据用户id添加到收藏夹")
-    public ResponseResult addUserFavorites(@PathVariable("aId")Long aId,@RequestBody List<Long> fIds){
-        return favoritesService.addUserFavorites(aId,fIds);
+    public ResponseResult addUserFavorites(@PathVariable("aId") Long aId, @RequestBody List<Long> fIds) {
+        return favoritesService.addUserFavorites(aId, fIds);
     }
 
     @GetMapping("/favoritesArticle/{fId}")
     @ApiOperation(value = "根据收藏夹id查询对应的所有文章")
-    public ResponseResult articleFavorites(@PathVariable("fId" )Long fId){
+    public ResponseResult articleFavorites(@PathVariable("fId") Long fId) {
         return favoritesService.articleFavorites(fId);
     }
 }

@@ -29,23 +29,26 @@ public class AttentionController {
 
     @GetMapping("/follow/{uId}")
     @ApiOperation(value = "用户的关注")
-    public ResponseResult userFollow(@PathVariable("uId") Long uId){
+    public ResponseResult userFollow(@PathVariable("uId") Long uId) {
         return attentionService.userFollow(uId);
     }
+
     @GetMapping("/fans/{uId}")
     @ApiOperation(value = "用户的粉丝")
-    public ResponseResult userFans(@PathVariable("uId") Long uId){
+    public ResponseResult userFans(@PathVariable("uId") Long uId) {
         return attentionService.userFans(uId);
     }
+
     @DeleteMapping("/follow/{uId}/{followUId}")
     @ApiOperation(value = "用户取消关注")
-    public ResponseResult deleteFollow(@PathVariable("uId") Long uId,@PathVariable("followUId") Long followUId){
-        return attentionService.deleteFollow(uId,followUId);
+    public ResponseResult deleteFollow(@PathVariable("uId") Long uId, @PathVariable("followUId") Long followUId) {
+        return attentionService.deleteFollow(uId, followUId);
     }
+
     @PostMapping("/follow/{uId}/{followUId}")
     @ApiOperation(value = "用户关注")
-    public ResponseResult addFollow(@PathVariable("uId") Long uId,@PathVariable("followUId") Long followUId){
-        return attentionService.addFollow(uId,followUId);
+    public ResponseResult addFollow(@PathVariable("uId") Long uId, @PathVariable("followUId") Long followUId) {
+        return attentionService.addFollow(uId, followUId);
     }
 
 }

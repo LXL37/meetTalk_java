@@ -22,4 +22,6 @@ public interface UserService extends IService<User> {
     ResponseResult userInfo(Long uId,Long myUId);
 
     ResponseResult userPrivate(Long uId, Long privateMode);
+
+    ResponseResult updateUser(User user);
 }

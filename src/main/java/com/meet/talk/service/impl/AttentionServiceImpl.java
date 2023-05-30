@@ -28,30 +28,32 @@ public class AttentionServiceImpl extends ServiceImpl<AttentionMapper, Attention
     private AttentionMapper attentionMapper;
     @Resource
     private UserMapper userMapper;
-    @Resource
-    private ArticleMapper articleMapper;
-
+    private LambdaQueryWrapper<Attention> queryWrapper=new LambdaQueryWrapper<>();
     @Override
     public ResponseResult userFollow(Long uId) {
         //todo 关注列表可以用redis进行缓存
 
         //查询用户关注的列表
-        LambdaQueryWrapper<Attention> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.clear();
         queryWrapper
                 .eq(Attention::getUId,uId)
                 .select(Attention::getFollowUId);
-        List<Attention> attentions = attentionMapper.selectList(queryWrapper);
-        List<Long> followIds=new ArrayList<>();;
-        attentions.forEach(followId->followIds.add(followId.getFollowUId()));
-        //联合user表查询关注的用户的头像 姓名 个性签名 uId
-        return ResponseResult.okResult(addUsers(followIds));
+        if (count(queryWrapper)!=0){
+            List<Attention> attentions = attentionMapper.selectList(queryWrapper);
+            List<Long> followIds=new ArrayList<>();;
+            attentions.forEach(followId->followIds.add(followId.getFollowUId()));
+            //联合user表查询关注的用户的头像 姓名 个性签名 uId
+            return ResponseResult.okResult(addUsers(followIds));
+        }else {
+            return ResponseResult.okResult();
+        }
+
     }
 
     @Override
     public ResponseResult deleteFollow(Long uId, Long followUId) {
 
-        LambdaQueryWrapper<Attention> queryWrapper=new LambdaQueryWrapper<>();
-
+        queryWrapper.clear();
         queryWrapper
                 .eq(Attention::getUId,uId)
                 .eq(Attention::getFollowUId,followUId);
@@ -61,17 +63,22 @@ public class AttentionServiceImpl extends ServiceImpl<AttentionMapper, Attention
 
     @Override
     public ResponseResult userFans(Long uId) {
-        LambdaQueryWrapper<Attention> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.clear();
         queryWrapper
                 .eq(Attention::getFollowUId,uId)
                 .select(Attention::getUId);
-        List<Attention> attentions = attentionMapper.selectList(queryWrapper);
-        List<Long> fansUIds=new ArrayList<>();
-        attentions.forEach(fans->fansUIds.add(fans.getUId()));
-        //联合user表查询关注的用户的头像 姓名 个性签名 uId
+        if (count(queryWrapper)!=0){
+
+            List<Attention> attentions = attentionMapper.selectList(queryWrapper);
+            List<Long> fansUIds=new ArrayList<>();
+            attentions.forEach(fans->fansUIds.add(fans.getUId()));
+            //联合user表查询关注的用户的头像 姓名 个性签名 uId
 
 
-        return ResponseResult.okResult(addUsers(fansUIds));
+            return ResponseResult.okResult(addUsers(fansUIds));
+        }else {
+            return ResponseResult.okResult();
+        }
     }
 
     @Override

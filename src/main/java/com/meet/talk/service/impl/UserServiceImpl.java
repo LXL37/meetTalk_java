@@ -17,6 +17,7 @@ import com.meet.talk.utils.JwtUtil;
 import com.meet.talk.utils.RedisCache;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;
 import lombok.extern.slf4j.Slf4j;
+import nonapi.io.github.classgraph.json.JSONUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,9 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,31 +51,60 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private PasswordEncoder passwordEncoder;
 
+
+    private static Set<Long> userLogin=new HashSet<>();
     @Override
     public ResponseResult login(User user) {
-        log.info("login接口:  {}",user);
-        userAuthenticate(user);
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user.getName(),user.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
-        //获取UserId生成Token
+
+            //获取UserId生成Token
         User loginUser= (User) authenticate.getPrincipal();
         String userId = loginUser.getUId().toString();
-        /* String jsonString = JSONObject.toJSONString();*/
-        String jwt = JwtUtil.createJWT(userId);
-        //将user存入到redis中
-        redisCache.setCacheObject(SystemConstants.LOGIN_USER_PREFIX +userId,loginUser,SystemConstants.LOGIN_USER_TTL, TimeUnit.MILLISECONDS);
-        //把token和userInfo 封装返回
-        //把user转换成userInfoVo
-        UserLoginVo loginVo=new UserLoginVo(jwt,loginUser);
 
+        UserLoginVo loginVo = null;
+        // 判断是否重复登陆 重复就删掉redis里的token 让jwt处理器进行处理
+
+        //todo 重复登陆  请求头？
+        if (userLogin.contains(loginUser.getUId())){
+           redisCache.deleteObject(SystemConstants.LOGIN_USER_PREFIX+userId);
+            String jwt = JwtUtil.createJWT(userId);
+
+
+            //将user存入到redis中
+            //把token和userInfo 封装返回
+            //把user转换成userInfoVo
+            loginVo=new UserLoginVo(jwt,loginUser);
+            redisCache.setCacheObject(SystemConstants.LOGIN_USER_PREFIX +userId,loginVo,SystemConstants.LOGIN_USER_TTL, TimeUnit.MILLISECONDS);
+
+        }else {
+
+            userLogin.add(loginUser.getUId());
+            /* String jsonString = JSONObject.toJSONString();*/
+            String jwt = JwtUtil.createJWT(userId);
+
+
+            //将user存入到redis中
+            //把token和userInfo 封装返回
+            //把user转换成userInfoVo
+            loginVo=new UserLoginVo(jwt,loginUser);
+            redisCache.setCacheObject(SystemConstants.LOGIN_USER_PREFIX +userId,loginVo,SystemConstants.LOGIN_USER_TTL, TimeUnit.MILLISECONDS);
+
+
+        }
+
+           
 
 
         return ResponseResult.okResult(loginVo);
+
     }
 
     @Override
     public ResponseResult register(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userMapper.insert(user);
         return ResponseResult.okResult();
     }
@@ -116,39 +144,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return ResponseResult.okResult(user);
     }
 
-    private void userAuthenticate(User user) {
-        System.out.println("loginuser"+user.toString());
-        //对数据进行非空判断
-        if (!StringUtils.hasText(user.getName())){
-            throw new SyntaxException(AppHttpCodeEnum.USERNAME_NOT_NULL.getMsg());
-        }
-        if (!StringUtils.hasText(user.getPassword())){
-            throw new SyntaxException(AppHttpCodeEnum.PASSWORD_NOT_NULL.getMsg());
-        }
-        //存在判断
-      /*  if (!user.getPassword().equals(user.getCheckPassword())){
-            throw new SyntaxException(AppHttpCodeEnum.PASSWORD_NOT_SAME.getMsg());
-        }*/
-        //安全性判断
-        if (!existUserName(user.getName())){
-            throw new SyntaxException(AppHttpCodeEnum.USERNAME_NOT_EXIST.getMsg());
-        }
-        if (!existPassword(user)){
-            throw new SyntaxException(AppHttpCodeEnum.PASSWORD_NOT_EXIST.getMsg());
-        }
+    @Override
+    public ResponseResult updateUser(User user) {
 
+        userMapper.updateById(user);
+        return ResponseResult.okResult();
     }
-    private boolean existUserName(String userName) {
-        LambdaQueryWrapper<User> queryWrapper =new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getName,userName);
-        return count(queryWrapper)>0;
-    }
-    private boolean existPassword(User userVo) {
-        LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getName,userVo.getName());
-        User user = userMapper.selectOne(queryWrapper);
 
-        return passwordEncoder.matches(userVo.getPassword(),user.getPassword());
-    }
 
 }
