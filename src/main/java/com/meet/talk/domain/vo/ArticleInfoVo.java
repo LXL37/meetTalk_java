@@ -17,6 +17,7 @@ public class ArticleInfoVo {
     private Long aId;
     private String title;
     private Long uId;
+
     private Date createTime;
 
 

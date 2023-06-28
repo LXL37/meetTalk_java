@@ -30,5 +30,6 @@ public class FavoritesArticle implements Serializable {
     private Long aId;
 
     @TableField(fill = FieldFill.INSERT)
+
     private Date createTime;
 }

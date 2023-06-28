@@ -49,6 +49,7 @@ public class User implements Serializable, UserDetails, Annotation {
     @Size(min = 0,max = 16)
     private String signature;
     @TableField(fill = FieldFill.INSERT)
+
     private Date createTime;
     private Long privateMode;
 

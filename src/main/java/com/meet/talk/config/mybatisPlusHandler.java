@@ -12,7 +12,7 @@ import java.util.Date;
 public class mybatisPlusHandler implements MetaObjectHandler {
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.setFieldValByName("createTime", new Date(), metaObject);
+        this.setFieldValByName("createTime", new Date(System.currentTimeMillis()+Long.parseLong("28800000")), metaObject);
 
     }
 
